@@ -1,5 +1,5 @@
 import socket
-
+import threading
 
 def client_send(client_obj, txt):
     client_obj.send(txt.encode())
@@ -8,6 +8,11 @@ def client_send(client_obj, txt):
 def client_receive(client_obj, buff=1024):
     return client_obj.recv(buff).decode()
 
+def client_thread_handle(client_obj):
+    client_send(client_obj, "Welcome\n" + "=" * 80 + "\n")
+    client_send(client_obj, "Name : ")
+    name = client_receive(client_obj)
+    client_send(client_obj, "\nThank You {}\nGoodbye...".format(name, ))
 
 # create socket obj
 sock_obj = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -21,8 +26,10 @@ while True:
     client_obj, client_addr = sock_obj.accept()
     print(client_obj, client_addr)
 
-    client_send(client_obj, "Welcome\n" + "=" * 80 + "\n")
-    client_send(client_obj, "Name : ")
-    name = client_receive(client_obj)
-    client_send(client_obj, "\nThank You {}\nGoodbye...".format(name, ))
-    client_obj.close()
+    threading.Thread(target=client_thread_handle(), args=(client_obj,), daemon=True).start()
+
+    # client_send(client_obj, "Welcome\n" + "=" * 80 + "\n")
+    # client_send(client_obj, "Name : ")
+    # name = client_receive(client_obj)
+    # client_send(client_obj, "\nThank You {}\nGoodbye...".format(name, ))
+    # client_obj.close()
